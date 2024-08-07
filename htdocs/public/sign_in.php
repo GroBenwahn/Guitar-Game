@@ -9,26 +9,39 @@ $password = $_POST['password'];
 $response = array('success' => false, 'message' => '');
 
 try {
-    // 비밀번호 해싱
-    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-    // SQL 쿼리 준비
-    $stmt = $conn->prepare("INSERT INTO users (email, password) VALUES (?, ?)");
+    // SQL 쿼리 준비 (이메일로 사용자 검색)
+    $stmt = $conn->prepare("SELECT name, password FROM users WHERE email = ?");
 
     if (!$stmt) {
         throw new Exception("Prepared statement failed: " . $conn->error);
     }
 
     // 파라미터 바인딩
-    $stmt->bind_param("ss", $email, $hashedPassword);
+    $stmt->bind_param("s", $email);
 
     // 쿼리 실행
-    if ($stmt->execute()) {
-        $response['success'] = true;
-        $response['message'] = "Account created successfully.";
+    $stmt->execute();
+
+    // 결과 가져오기
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $hashedPassword = $row['password'];
+        $name = $row['name'];
+
+        // 비밀번호 검증
+        if (password_verify($password, $hashedPassword)) {
+            $response['success'] = true;
+            $response['name'] = $name;  // 사용자 이름 반환
+            $response['message'] = "Sign in successful. Welcome, $name!";
+        } else {
+            $response['success'] = false;
+            $response['message'] = "Invalid email or password.";
+        }
     } else {
         $response['success'] = false;
-        $response['message'] = "Error creating account: " . $stmt->error;
+        $response['message'] = "Invalid email or password.";
     }
 
     $stmt->close();
