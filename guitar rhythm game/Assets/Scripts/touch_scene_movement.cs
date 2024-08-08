@@ -3,29 +3,29 @@ using UnityEngine.SceneManagement;
 
 public class SceneSwitcher : MonoBehaviour
 {
-    // ´ÙÀ½ ¾ÀÀÇ ÀÌ¸§ ¶Ç´Â ÀÎµ¦½º ¼³Á¤
-    public string nextSceneName; // ¾À ÀÌ¸§À¸·Î ÀüÈ¯ÇÒ °æ¿ì
-    public int nextSceneIndex; // ¾À ÀÎµ¦½º·Î ÀüÈ¯ÇÒ °æ¿ì
+    // ë‹¤ìŒ ì”¬ì˜ ì´ë¦„ ë˜ëŠ” ì¸ë±ìŠ¤ ì„¤ì •
+    public string nextSceneName; // ì”¬ ì´ë¦„ìœ¼ë¡œ ì „í™˜í•  ê²½ìš°
+    public int nextSceneIndex; // ì”¬ ì¸ë±ìŠ¤ë¡œ ì „í™˜í•  ê²½ìš°
 
     void Update()
     {
-        // ÅÍÄ¡ ÀÔ·Â °¨Áö
+        // í„°ì¹˜ ì…ë ¥ ê°ì§€
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
         {
             SwitchScene();
         }
 
-        // ¸¶¿ì½º Å¬¸¯ °¨Áö (µğ¹ö±× ¹× PC¿¡¼­ Å×½ºÆ® ¿ëµµ)
+        // ë§ˆìš°ìŠ¤ í´ë¦­ ê°ì§€ (ë””ë²„ê·¸ ë° PCì—ì„œ í…ŒìŠ¤íŠ¸ ìš©ë„)
         if (Input.GetMouseButtonDown(0))
         {
             SwitchScene();
         }
     }
 
-    // ¾À ÀüÈ¯ ¸Ş¼Òµå
+    // ì”¬ ì „í™˜ ë©”ì†Œë“œ
     void SwitchScene()
     {
-        // ¾À ÀÌ¸§ ¶Ç´Â ¾À ÀÎµ¦½º Áß ÇÏ³ª¸¸ »ç¿ëÇÏ¿© ¾À ÀüÈ¯
+        // ì”¬ ì´ë¦„ ë˜ëŠ” ì”¬ ì¸ë±ìŠ¤ ì¤‘ í•˜ë‚˜ë§Œ ì‚¬ìš©í•˜ì—¬ ì”¬ ì „í™˜
         if (!string.IsNullOrEmpty(nextSceneName))
         {
             SceneManager.LoadScene(nextSceneName);
