@@ -13,8 +13,6 @@ public class UserManager : MonoBehaviour
     public InputField emailInputField;
     public InputField passwordInputField;
 
-    // 결과 텍스트 출력
-    private Text resultText;
 
     // 사용자 추가 메소드
     public void OnAddUserButtonClick()
@@ -45,13 +43,11 @@ public class UserManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
                 Debug.LogError("Error: " + request.error);
-                resultText.text = "Error: " + request.error; // 결과 텍스트에 오류 메시지 출력
             }
             else
             {
                 string json = request.downloadHandler.text;
                 Debug.Log("Response: " + json);
-                resultText.text = "Response: " + json; // 결과 텍스트에 서버 응답 출력
 
                 // JSON 파싱
                 Response response = JsonUtility.FromJson<Response>(json);
@@ -59,12 +55,10 @@ public class UserManager : MonoBehaviour
                 if (response.success)
                 {
                     Debug.Log("User added successfully.");
-                    resultText.text = "User added successfully.";
                 }
                 else
                 {
                     Debug.LogError("Failed to add user: " + response.message);
-                    resultText.text = "Failed to add user: " + response.message;
                 }
             }
         }
