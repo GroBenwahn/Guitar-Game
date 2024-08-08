@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using TMPro;
 
 public class SignManager : MonoBehaviour
 {
@@ -11,9 +12,12 @@ public class SignManager : MonoBehaviour
     // Input Fields
     public InputField emailInputField;
     public InputField passwordInputField;
+    
 
     // 결과 텍스트 출력
     private Text resultText;
+
+    public TextMeshProUGUI profile;
 
     // 사용자 추가 메소드
     public void OnSignInButtonClick()
@@ -24,6 +28,7 @@ public class SignManager : MonoBehaviour
 
         // 사용자 추가 코루틴 실행
         StartCoroutine(Sign_in(email, password));
+        
     }
 
     // 사용자 추가 코루틴
@@ -42,13 +47,13 @@ public class SignManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
                 Debug.LogError("Error: " + request.error);
-                resultText.text = "Error: " + request.error; // 결과 텍스트에 오류 메시지 출력
+                //resultText.text = "Error: " + request.error; // 결과 텍스트에 오류 메시지 출력
             }
             else
             {
                 string json = request.downloadHandler.text;
                 Debug.Log("Response: " + json);
-                resultText.text = "Response: " + json; // 결과 텍스트에 서버 응답 출력
+                //resultText.text = "Response: " + json; // 결과 텍스트에 서버 응답 출력
 
                 // JSON 파싱
                 Response response = JsonUtility.FromJson<Response>(json);
@@ -56,12 +61,14 @@ public class SignManager : MonoBehaviour
                 if (response.success)
                 {
                     Debug.Log("Login successfully. Welcome " + response.name + "!");
-                    resultText.text = "Login successfully. Welcome " + response.name + "!";
+                    //resultText.text = "Login successfully. Welcome " + response.name + "!";
+                    profile.text = response.name;
+                    Debug.Log(profile);
                 }
                 else
                 {
                     Debug.LogError("Failed to Login: " + response.message);
-                    resultText.text = "Failed to Login: " + response.message;
+                    //resultText.text = "Failed to Login: " + response.message;
                 }
             }
         }
