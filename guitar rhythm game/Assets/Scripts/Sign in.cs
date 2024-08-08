@@ -13,7 +13,7 @@ public class SignManager : MonoBehaviour
     public InputField passwordInputField;
 
     // 결과 텍스트 출력
-    public Text resultText;
+    private Text resultText;
 
     // 사용자 추가 메소드
     public void OnSignInButtonClick()
