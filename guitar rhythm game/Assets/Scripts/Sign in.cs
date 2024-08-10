@@ -210,8 +210,8 @@ public class SigninManager : MonoBehaviour
 
         Debug.Log("Logged out successfully.");
 
-        // 로그인 화면으로 이동 (예시)
-        // SceneManager.LoadScene("LoginScene");
+        profileBox.SetActive(false);
+        loginToggle.gameObject.SetActive(true);
     }
 
     // JSON 응답 파싱용 클래스
