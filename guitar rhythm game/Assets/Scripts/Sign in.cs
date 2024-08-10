@@ -161,8 +161,10 @@ public class SigninManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("Failed to Auto Login: " + response.message);
+                    OnLogoutButtonClick();
+                    Debug.Log("Failed to Auto Login: there's no ID in DB" + response.message);
                     // 자동 로그인 실패 시, 로그인 화면 유지
+
                 }
             }
         }
