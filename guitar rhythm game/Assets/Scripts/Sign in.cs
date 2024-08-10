@@ -19,14 +19,12 @@ public class SigninManager : MonoBehaviour
     // 자동 로그인 여부를 위한 Toggle
     public Toggle autoLoginToggle;
 
-
     // 로그인 name 가져오는 변수
     public TextMeshProUGUI profile;
+
     // profile 박스& 로그인 토글
     public GameObject profileBox;
     public Toggle loginToggle;
-
-
 
 
     // 로그인 버튼 클릭 메소드
@@ -85,13 +83,11 @@ public class SigninManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
                 Debug.LogError("Error: " + request.error);
-                //resultText.text = "Error: " + request.error; // 결과 텍스트에 오류 메시지 출력
             }
             else
             {
                 string json = request.downloadHandler.text;
                 Debug.Log("Response: " + json);
-                //resultText.text = "Response: " + json; // 결과 텍스트에 서버 응답 출력
 
                 // JSON 파싱
                 Response response = JsonUtility.FromJson<Response>(json);
@@ -99,36 +95,34 @@ public class SigninManager : MonoBehaviour
                 if (response.success)
                 {
                     Debug.Log("Login successful. Welcome " + response.name + "!");
-                    //resultText.text = "Login successful. Welcome " + response.name + "!";
                     profile.text = response.name;
                     profileBox.SetActive(true);
                     loginToggle.gameObject.SetActive(false);
 
                     // 자동 로그인 설정 여부에 따라 저장
                     if (autoLoginToggle.isOn)
-                    {
+                    {   
+                        // 자동로그인 -> password 저장
+                        PlayerPrefs.SetString("name", response.name);
                         PlayerPrefs.SetString("email", email);
                         PlayerPrefs.SetString("password", password);
                         PlayerPrefs.SetInt("autoLogin", 1);
                         Debug.Log("Auto Login set 1");
                     }
                     else
-                    {
-                        PlayerPrefs.DeleteKey("email");
+                    {   // 일반로그인 -> password 삭제
+                        PlayerPrefs.SetString("name", response.name);
+                        PlayerPrefs.SetString("email", email);
                         PlayerPrefs.DeleteKey("password");
                         PlayerPrefs.SetInt("autoLogin", 0);
                         Debug.Log("Auto Login set 0");
                     }
 
                     PlayerPrefs.Save();
-
-                    // 메인 화면으로 이동 (예시)
-                    // SceneManager.LoadScene("MainScene");
                 }
                 else
                 {
                     Debug.LogError("Failed to Login: " + response.message);
-                    //resultText.text = "Failed to Login: " + response.message;
                 }
             }
         }
@@ -150,7 +144,6 @@ public class SigninManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
                 Debug.LogError("Error: " + request.error);
-                //resultText.text = "Error: " + request.error;
             }
             else
             {
@@ -165,16 +158,10 @@ public class SigninManager : MonoBehaviour
                     profileBox.SetActive(true);
                     loginToggle.gameObject.SetActive(false);
                     Debug.Log("Auto login successful. Welcome back " + response.name + "!");
-                    // resultText.text = "Auto login successful. Welcome back " + response.name + "!";
-
-                    // 메인 화면으로 이동 (예시)
-                    // SceneManager.LoadScene("MainScene");
                 }
                 else
                 {
                     Debug.LogError("Failed to Auto Login: " + response.message);
-                    // resultText.text = "Failed to Auto Login: " + response.message;
-
                     // 자동 로그인 실패 시, 로그인 화면 유지
                 }
             }
@@ -203,10 +190,15 @@ public class SigninManager : MonoBehaviour
     // 로그아웃 메소드
     public void OnLogoutButtonClick()
     {
+        PlayerPrefs.DeleteKey("name");
         PlayerPrefs.DeleteKey("email");
         PlayerPrefs.DeleteKey("password");
         PlayerPrefs.SetInt("autoLogin", 0);
         PlayerPrefs.Save();
+
+        // inputField 초기화
+        emailInputField.text = "";
+        passwordInputField.text = "";
 
         Debug.Log("Logged out successfully.");
 

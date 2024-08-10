@@ -11,7 +11,8 @@ public class SceneSwitcher : MonoBehaviour
     public Rect touchArea = new Rect(0, Screen.height - 1080 + 209, 1920, 1080 - 209); // 기본적으로 화면 전체
 
     void Update()
-    {
+    {   
+
         // 터치 입력 감지
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
         {
