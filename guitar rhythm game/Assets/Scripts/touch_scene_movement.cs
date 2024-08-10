@@ -7,18 +7,29 @@ public class SceneSwitcher : MonoBehaviour
     public string nextSceneName; // 씬 이름으로 전환할 경우
     public int nextSceneIndex; // 씬 인덱스로 전환할 경우
 
+    // 터치 범위 설정 (화면의 좌표)
+    public Rect touchArea = new Rect(0, Screen.height - 1080 + 209, 1920, 1080 - 209); // 기본적으로 화면 전체
+
     void Update()
     {
         // 터치 입력 감지
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
         {
-            SwitchScene();
+            Vector2 touchPosition = Input.GetTouch(0).position;
+            if (touchArea.Contains(touchPosition))
+            {
+                SwitchScene();
+            }
         }
 
         // 마우스 클릭 감지 (디버그 및 PC에서 테스트 용도)
         if (Input.GetMouseButtonDown(0))
         {
-            SwitchScene();
+            Vector2 mousePosition = Input.mousePosition;
+            if (touchArea.Contains(mousePosition))
+            {
+                SwitchScene();
+            }
         }
     }
 
