@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <style>
+        #drop-area {
+            border: 2px dashed #ccc;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        .file-info {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload MP3 or MIDI Files</h1>
+    <div id="drop-area">
+        <p>Drag & Drop files here or click to upload</p>
+        <input type="file" id="fileElem" multiple accept=".mp3,.midi" style="display:none">
+        <button id="fileSelect">Select Files</button>
+        <div id="fileList"></div>
+        <button id="uploadButton">Upload</button>
+    </div>
+
+    <script>
+        let fileSelect = document.getElementById("fileSelect");
+        let fileElem = document.getElementById("fileElem");
+        let fileList = document.getElementById("fileList");
+        let uploadButton = document.getElementById("uploadButton");
+        let filesToUpload = [];
+
+        fileSelect.addEventListener("click", function (e) {
+            if (fileElem) {
+                fileElem.click();
+            }
+        });
+
+        fileElem.addEventListener("change", handleFiles);
+
+        function handleFiles() {
+            filesToUpload = fileElem.files;
+            fileList.innerHTML = '';
+            for (let i = 0; i < filesToUpload.length; i++) {
+                let file = filesToUpload[i];
+                let fileInfo = document.createElement('div');
+                fileInfo.classList.add('file-info');
+                fileInfo.innerHTML = `<strong>${file.name}</strong> - ${Math.round(file.size / 1024)} KB`;
+                fileList.appendChild(fileInfo);
+            }
+        }
+
+        uploadButton.addEventListener("click", function () {
+            if (filesToUpload.length > 0) {
+                let formData = new FormData();
+                for (let i = 0; i < filesToUpload.length; i++) {
+                    formData.append('files[]', filesToUpload[i]);
+                }
+                fetch('upload.php', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => response.json())
+                  .then(data => {
+                      alert(data.message);
+                  })
+                  .catch(error => {
+                      console.error('Error:', error);
+                  });
+            } else {
+                alert("Please select a file first.");
+            }
+        });
+    </script>
+</body>
+</html>
