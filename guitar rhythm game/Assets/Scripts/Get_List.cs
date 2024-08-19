@@ -101,6 +101,7 @@ public class Get_List : MonoBehaviour
             Text toggleText = label.AddComponent<Text>();
             toggleText.text = $"{data[i].name} - {data[i].musician} - {data[i].url}";
             toggleText.font = customFont;
+            toggleText.fontSize = 28;
             toggleText.color = Color.black;
             toggleText.alignment = TextAnchor.MiddleLeft;
 
