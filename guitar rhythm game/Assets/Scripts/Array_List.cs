@@ -1,28 +1,25 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Array_List : MonoBehaviour
 {
-    
     public Transform content;
-
-    
     public Toggle descendingToggle;
-
     public Toggle ascendingToggle;
 
+    private List<Toggle> toggleList = new List<Toggle>();
     private Toggle[] originalOrder;
 
     private void Start()
     {
+        // 기존 UI 토글을 가져와서 원래 순서를 저장합니다.
         originalOrder = content.GetComponentsInChildren<Toggle>();
 
         descendingToggle.onValueChanged.AddListener(delegate { SortTogglesByName(descendingToggle.isOn, true); });
-
         ascendingToggle.onValueChanged.AddListener(delegate { SortTogglesByName(ascendingToggle.isOn, false); });
     }
-
 
     private void SortTogglesByName(bool isOn, bool isDescending)
     {
