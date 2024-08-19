@@ -2,39 +2,35 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using TMPro;
 
 public class Get_List : MonoBehaviour
 {
     private string baseURL = "http://localhost/public_4/get_url.php";
 
-    public Transform content;
-    public Font customFont;
-    public Sprite customBackground;
+    // 데이터를 저장할 배열들
+    public string[] names;
+    public string[] musicians;
+    public string[] urls;
+    public string[] memos;
+
+    public Transform content; // UI 요소를 담을 부모 객체
+    public Font customFont; // 사용자 지정 폰트
+    public Sprite customBackground; // 사용자 지정 배경 이미지
     public Image panel;
 
-    public Toggle descendingToggle;  //  이름 올림차순
-    public Toggle ascendingToggle;  //  이름  내림차순
-    public Toggle groupByMusicianToggle;  // 가수 그룹화 토글
+    public TextMeshProUGUI nameText;
+    public TextMeshProUGUI musicianText;
+    public TextMeshProUGUI urlText;
 
     void Start()
     {
-        // 정렬 토글 리스너 추가
-        descendingToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData("DESC", groupByMusicianToggle.isOn); });
-        ascendingToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData("ASC", groupByMusicianToggle.isOn); });
-        groupByMusicianToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData(ascendingToggle.isOn ? "ASC" : "DESC", groupByMusicianToggle.isOn); });
-
-        // 초기 데이터 가져오기 (기본 오름차순)
-        FetchAndDisplayData("ASC", false);
+        StartCoroutine(GetDataFromServer());
     }
 
-    private void FetchAndDisplayData(string sortOrder, bool groupByMusician)
+    private IEnumerator GetDataFromServer()
     {
-        StartCoroutine(GetDataFromServer(sortOrder, groupByMusician));
-    }
-
-    private IEnumerator GetDataFromServer(string sortOrder, bool groupByMusician)
-    {
-        using (UnityWebRequest www = UnityWebRequest.Get($"{baseURL}?sortOrder={sortOrder}&groupByMusician={groupByMusician.ToString().ToLower()}"))
+        using (UnityWebRequest www = UnityWebRequest.Get(baseURL))
         {
             yield return www.SendWebRequest();
 
@@ -44,6 +40,8 @@ public class Get_List : MonoBehaviour
             }
             else
             {
+                // 서버에서 반환된 JSON 데이터 처리
+                Debug.Log(www.downloadHandler.text);
                 ProcessResponse(www.downloadHandler.text);
             }
         }
@@ -51,11 +49,14 @@ public class Get_List : MonoBehaviour
 
     private void ProcessResponse(string jsonResponse)
     {
+        // JSON 응답 파싱
         Response response = JsonUtility.FromJson<Response>(jsonResponse);
 
         if (response.success)
         {
-            PopulateUIWithData(response.data);
+            Debug.Log("데이터 조회 성공.");
+            PopulateData(response.data);
+            PopulateUIWithData();
         }
         else
         {
@@ -63,82 +64,120 @@ public class Get_List : MonoBehaviour
         }
     }
 
-    private void PopulateUIWithData(Data[] data)
+    private void PopulateData(Data[] data)
     {
+        // 데이터 개수에 맞춰 배열 초기화
+        names = new string[data.Length];
+        musicians = new string[data.Length];
+        urls = new string[data.Length];
+        memos = new string[data.Length];
+
+        // 배열에 데이터 저장
+        for (int i = 0; i < data.Length; i++)
+        {
+            names[i] = data[i].name;
+            musicians[i] = data[i].musician;
+            urls[i] = data[i].url;
+            memos[i] = data[i].memo;
+        }
+    }
+
+    private void PopulateUIWithData()
+    {
+        // 기존 UI 요소들을 초기화
         foreach (Transform child in content)
         {
             Destroy(child.gameObject);
         }
 
-        for (int i = 0; i < data.Length; i++)
+        // 배열 데이터에 기반하여 토글 생성 및 설정
+        for (int i = 0; i < names.Length; i++)
         {
+            string nn = names[i];
+            string mm = musicians[i];
+            string uu = urls[i];
+            // 새 GameObject 생성
             GameObject toggleObj = new GameObject($"Toggle_{i}");
             toggleObj.transform.SetParent(content, false);
 
+            // Toggle 컴포넌트 추가
             Toggle newToggle = toggleObj.AddComponent<Toggle>();
 
+            // Background 및 체크 표시를 위한 Image 추가
             GameObject background = new GameObject("Background");
             background.transform.SetParent(toggleObj.transform, false);
             Image backgroundImage = background.AddComponent<Image>();
             backgroundImage.sprite = customBackground;
             newToggle.targetGraphic = backgroundImage;
 
+            // 이미지 크기 조절
             RectTransform bgRect = backgroundImage.GetComponent<RectTransform>();
-            bgRect.sizeDelta = new Vector2(700, 100);
+            bgRect.sizeDelta = new Vector2(700, 100); // 예시로 이미지 크기를 설정
 
-            bgRect.localScale = Vector3.one;
+            // 이미지 비율 유지하면서 크기 조절
+            bgRect.localScale = Vector3.one; // 기본 스케일 설정
 
+            // Checkmark 생성 및 설정
             GameObject checkmark = new GameObject("Checkmark");
             checkmark.transform.SetParent(background.transform, false);
             Image checkmarkImage = checkmark.AddComponent<Image>();
             checkmarkImage.sprite = customBackground;
             RectTransform checkmarkRect = checkmarkImage.GetComponent<RectTransform>();
-            checkmarkRect.sizeDelta = new Vector2(20, 20);
+            checkmarkRect.sizeDelta = new Vector2(20, 20); // 체크박스 크기 조절
             newToggle.graphic = checkmarkImage;
 
+            // Text 생성 및 설정
             GameObject label = new GameObject("Label");
             label.transform.SetParent(toggleObj.transform, false);
             Text toggleText = label.AddComponent<Text>();
-            toggleText.text = $"{data[i].name} - {data[i].musician} - {data[i].url}";
+            toggleText.text = $"{names[i]} - {musicians[i]} - {urls[i]}";
             toggleText.font = customFont;
-            toggleText.fontSize = 28;
             toggleText.color = Color.black;
             toggleText.alignment = TextAnchor.MiddleLeft;
 
+            // Text 크기 조절
             RectTransform textRect = toggleText.GetComponent<RectTransform>();
-            textRect.sizeDelta = new Vector2(250, 100);
+            textRect.sizeDelta = new Vector2(250, 100); // 텍스트 영역 크기 설정
             textRect.anchorMin = new Vector2(0, 0);
             textRect.anchorMax = new Vector2(1, 1);
             textRect.pivot = new Vector2(0.5f, 0.5f);
             textRect.anchoredPosition = new Vector2(10, 0);
 
+            // 토글 크기 설정
             RectTransform toggleRect = toggleObj.GetComponent<RectTransform>();
-            toggleRect.sizeDelta = new Vector2(350, 100);
-            toggleRect.anchorMin = new Vector2(0.5f, 1);
+            toggleRect.sizeDelta = new Vector2(350, 100); // 토글 크기 설정
+            toggleRect.anchorMin = new Vector2(0.5f, 1); // `Viewport`에 상대적인 위치 설정
             toggleRect.anchorMax = new Vector2(0.5f, 1);
             toggleRect.pivot = new Vector2(0.5f, 0.5f);
-            toggleRect.anchoredPosition = new Vector2(0, -100 * i);
+            toggleRect.anchoredPosition = new Vector2(0, -100 * i); // 위치 조정
 
+            // Toggle의 OnValueChanged 이벤트에 리스너 추가
             newToggle.onValueChanged.AddListener(delegate {
                 panel.gameObject.SetActive(newToggle.isOn);
+                nameText.text = nn;
+                musicianText.text = mm;
+                urlText.text = uu;
             });
         }
     }
 
-    [System.Serializable]
-    public class Response
-    {
-        public bool success;
-        public string message;
-        public Data[] data;
-    }
 
-    [System.Serializable]
-    public class Data
-    {
-        public string name;
-        public string musician;
-        public string url;
-        public string memo;
-    }
+
+}
+
+[System.Serializable]
+public class Response
+{
+    public bool success;
+    public string message;
+    public Data[] data;
+}
+
+[System.Serializable]
+public class Data
+{
+    public string name;
+    public string musician;
+    public string url;
+    public string memo;
 }
