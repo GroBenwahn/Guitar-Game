@@ -4,9 +4,14 @@ include '../includes/db.php';
 $response = array("success" => false, "message" => "", "data" => array());
 
 try {
-    // 모든 데이터를 조회하는 SQL 쿼리
-    $stmt = $conn->prepare("SELECT name, musician, url, memo FROM url_upload");
-    
+    // 정렬 기준을 파라미터로 받아옵니다. 기본값은 'ASC'로 설정
+    $sortOrder = isset($_GET['sortOrder']) && $_GET['sortOrder'] === 'DESC' ? 'DESC' : 'ASC';
+    $groupByMusician = isset($_GET['groupByMusician']) && $_GET['groupByMusician'] === 'true';
+
+    // 그룹화와 정렬 기준에 따라 데이터를 조회하는 SQL 쿼리
+    $orderBy = $groupByMusician ? "musician ASC, name $sortOrder" : "name $sortOrder";
+    $stmt = $conn->prepare("SELECT name, musician, url, memo FROM url_upload ORDER BY $orderBy");
+
     if (!$stmt) {
         throw new Exception("Prepared statement failed: " . $conn->error);
     }
