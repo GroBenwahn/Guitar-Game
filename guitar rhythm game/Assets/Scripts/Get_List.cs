@@ -22,6 +22,7 @@ public class Get_List : MonoBehaviour
     public Toggle ascendingToggle;      // 오름차순
     public Toggle groupByMusicianToggle;  // 추가된 그룹화 토글
 
+    public TMP_InputField searchInputField; // 검색을 위한 InputField 추가
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI musicianText;
     public TextMeshProUGUI urlText;
@@ -29,22 +30,26 @@ public class Get_List : MonoBehaviour
     void Start()
     {
         // 정렬 토글 리스너 추가
-        descendingToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData("DESC", groupByMusicianToggle.isOn); });
-        ascendingToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData("ASC", groupByMusicianToggle.isOn); });
-        groupByMusicianToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData(ascendingToggle.isOn ? "ASC" : "DESC", groupByMusicianToggle.isOn); });
+        descendingToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData("DESC", groupByMusicianToggle.isOn, searchInputField.text); });
+        ascendingToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData("ASC", groupByMusicianToggle.isOn, searchInputField.text); });
+        groupByMusicianToggle.onValueChanged.AddListener(delegate { FetchAndDisplayData(ascendingToggle.isOn ? "ASC" : "DESC", groupByMusicianToggle.isOn, searchInputField.text); });
+
+        // 검색 InputField 리스너 추가
+        searchInputField.onValueChanged.AddListener(delegate { FetchAndDisplayData(ascendingToggle.isOn ? "ASC" : "DESC", groupByMusicianToggle.isOn, searchInputField.text); });
 
         // 초기 데이터 가져오기 (기본 오름차순)
-        FetchAndDisplayData("ASC", false);
+        FetchAndDisplayData("ASC", false, "");
     }
 
-    private void FetchAndDisplayData(string sortOrder, bool groupByMusician)
+    private void FetchAndDisplayData(string sortOrder, bool groupByMusician, string searchName)
     {
-        StartCoroutine(GetDataFromServer(sortOrder, groupByMusician));
+        StartCoroutine(GetDataFromServer(sortOrder, groupByMusician, searchName));
     }
 
-    private IEnumerator GetDataFromServer(string sortOrder, bool groupByMusician)
+    private IEnumerator GetDataFromServer(string sortOrder, bool groupByMusician, string searchName)
     {
-        using (UnityWebRequest www = UnityWebRequest.Get($"{baseURL}?sortOrder={sortOrder}&groupByMusician={groupByMusician.ToString().ToLower()}"))
+        string url = $"{baseURL}?sortOrder={sortOrder}&groupByMusician={groupByMusician.ToString().ToLower()}&searchName={UnityWebRequest.EscapeURL(searchName)}";
+        using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             yield return www.SendWebRequest();
 
@@ -65,7 +70,14 @@ public class Get_List : MonoBehaviour
 
         if (response.success)
         {
-            PopulateUIWithData(response.data);
+            if (response.data.Length > 0)
+            {
+                PopulateUIWithData(response.data);
+            }
+            else
+            {
+                Debug.Log("일치하지 않습니다.");
+            }
         }
         else
         {
