@@ -36,7 +36,7 @@ public class Get_List : MonoBehaviour
 
     private bool isGroupedByMusician = false;  // 현재 데이터가 뮤지션별로 그룹화되어 있는지 추적
 
-    public Button gamestart;
+    public Button gamestart;        // 게임 시작 버튼
 
     private string videoID;  // videoID 변수 추가
 
@@ -206,6 +206,8 @@ public class Get_List : MonoBehaviour
                 nameText.text = nn;                            // 이름 텍스트 업데이트
                 musicianText.text = mm;                    // 뮤지션 텍스트 업데이트
                 urlText.text = uu;                               // URL 텍스트 업데이트
+                LoadImageFromDatabase(nn);
+
 
                 gamestart.onClick.AddListener(() => {
                 videoID = ExtractYouTubeId(uu);
@@ -228,25 +230,41 @@ public class Get_List : MonoBehaviour
         }
     }
 
-    public void LoadImageFromDatabase(int imageID)
+    public void LoadImageFromDatabase(string imageID)
     {
         StartCoroutine(LoadImageCoroutine(imageID));
     }
 
-    private IEnumerator LoadImageCoroutine(int imageID)
+    private IEnumerator LoadImageCoroutine(string imageID)
     {
-        string url = "http://localhost/public_4/fetch_image.php?num=" + imageID;
-        UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
-        yield return request.SendWebRequest();
+        string[] extensions = { ".jpg", ".png" };
+        Texture2D texture = null;
 
-        if (request.result != UnityWebRequest.Result.Success)
+        foreach (string ext in extensions)
         {
-            Debug.LogError("Error loading image: " + request.error);
+            string url = "http://localhost/img/" + imageID + ext;
+            UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
+            request.timeout = 60;  // 타임아웃을 30초로 설정
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                texture = DownloadHandlerTexture.GetContent(request);
+                break; // 성공적으로 로드된 경우 반복 종료
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to load image with extension {ext}: {request.error}");
+            }
+        }
+
+        if (texture != null)
+        {
+            albumImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
         else
         {
-            Texture2D texture = DownloadHandlerTexture.GetContent(request);
-            albumImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            Debug.LogError("Error loading image: Could not find a valid image with any of the tried extensions.");
         }
     }
 
