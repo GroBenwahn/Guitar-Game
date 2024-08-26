@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class Get_List : MonoBehaviour
 {
@@ -32,6 +33,10 @@ public class Get_List : MonoBehaviour
     public TextMeshProUGUI urlText;             // 선택된 항목의 URL을 표시할 텍스트
 
     private bool isGroupedByMusician = false;  // 현재 데이터가 뮤지션별로 그룹화되어 있는지 추적
+
+    public Button gamestart;
+
+    private string videoID;  // videoID 변수 추가
 
     void Start()
     {
@@ -108,6 +113,16 @@ public class Get_List : MonoBehaviour
         {
             Debug.LogWarning($"데이터 조회 실패: {response.message}");  // 오류 메시지 출력
         }
+    }
+
+    public static string ExtractYouTubeId(string URL)
+    {
+        string[] parts = URL.Split('/');
+        string lastPart = parts[parts.Length - 1];
+
+        string videoId = lastPart.Split('?')[0];
+
+        return videoId;
     }
 
     // 서버에서 받아온 데이터를 UI에 표시하는 메서드
@@ -189,6 +204,24 @@ public class Get_List : MonoBehaviour
                 nameText.text = nn;                            // 이름 텍스트 업데이트
                 musicianText.text = mm;                    // 뮤지션 텍스트 업데이트
                 urlText.text = uu;                               // URL 텍스트 업데이트
+
+                gamestart.onClick.AddListener(() => {
+                videoID = ExtractYouTubeId(uu);
+                
+
+                if (PlayerPrefs.HasKey(videoID)) 
+                {
+                    PlayerPrefs.DeleteKey(videoID);
+                }
+                else
+                {
+                    PlayerPrefs.SetString("VideoId", videoID);
+                    PlayerPrefs.Save();
+                }
+                SceneManager.LoadScene("GameScene");
+
+                Debug.Log("videoID 저장됨: " + videoID);
+                });
             });
         }
     }
