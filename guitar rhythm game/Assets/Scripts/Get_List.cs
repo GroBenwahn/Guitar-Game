@@ -31,6 +31,8 @@ public class Get_List : MonoBehaviour
     public TextMeshProUGUI musicianText;    // 선택된 항목의 뮤지션을 표시할 텍스트
     public TextMeshProUGUI urlText;             // 선택된 항목의 URL을 표시할 텍스트
 
+    public Image albumImage;            // 앨범 이미지
+
     private bool isGroupedByMusician = false;  // 현재 데이터가 뮤지션별로 그룹화되어 있는지 추적
 
     void Start()
@@ -189,7 +191,30 @@ public class Get_List : MonoBehaviour
                 nameText.text = nn;                            // 이름 텍스트 업데이트
                 musicianText.text = mm;                    // 뮤지션 텍스트 업데이트
                 urlText.text = uu;                               // URL 텍스트 업데이트
+                LoadImageFromDatabase(6);
             });
+        }
+    }
+
+    public void LoadImageFromDatabase(int imageID)
+    {
+        StartCoroutine(LoadImageCoroutine(imageID));
+    }
+
+    private IEnumerator LoadImageCoroutine(int imageID)
+    {
+        string url = "http://localhost/public_4/fetch_image.php?num=" + imageID;
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
+        yield return request.SendWebRequest();
+
+        if (request.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("Error loading image: " + request.error);
+        }
+        else
+        {
+            Texture2D texture = DownloadHandlerTexture.GetContent(request);
+            albumImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
     }
 
