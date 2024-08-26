@@ -220,7 +220,7 @@ public class Get_List : MonoBehaviour
                     PlayerPrefs.SetString("VideoId", videoID);
                     PlayerPrefs.Save();
                 }
-                SceneManager.LoadScene("GameScene");
+                SceneManager.LoadScene("Game Scene");
 
                 Debug.Log("videoID 저장됨: " + videoID);
                 });
