@@ -201,33 +201,37 @@ public class Get_List : MonoBehaviour
             textRect.anchoredPosition = new Vector2(10, 0);
 
             // 버튼 클릭 시 패널에 세부 정보 표시
-            newButton.onClick.AddListener(delegate {
-                panel.gameObject.SetActive(true);     // 패널 표시
-                nameText.text = nn;                            // 이름 텍스트 업데이트
-                musicianText.text = mm;                    // 뮤지션 텍스트 업데이트
-                urlText.text = uu;                               // URL 텍스트 업데이트
-                LoadImageFromDatabase(nn);
-
-
-                gamestart.onClick.AddListener(() => {
-                videoID = ExtractYouTubeId(uu);
-                
-
-                if (PlayerPrefs.HasKey(videoID)) 
-                {
-                    PlayerPrefs.DeleteKey(videoID);
-                }
-                else
-                {
-                    PlayerPrefs.SetString("VideoId", videoID);
-                    PlayerPrefs.Save();
-                }
-                SceneManager.LoadScene("Game Scene");
-
-                Debug.Log("videoID 저장됨: " + videoID);
-                });
-            });
+            newButton.onClick.AddListener(() => OnNewButtonClick(nn, mm, uu));
         }
+    }
+
+    void OnNewButtonClick(string nn, string mm, string uu)
+    {
+        panel.gameObject.SetActive(true);  // 패널 표시
+        nameText.text = nn;                // 이름 텍스트 업데이트
+        musicianText.text = mm;            // 뮤지션 텍스트 업데이트
+        urlText.text = uu;                 // URL 텍스트 업데이트
+        LoadImageFromDatabase(nn);
+
+        gamestart.onClick.RemoveAllListeners();
+
+        gamestart.onClick.AddListener(() => OnGameStartClick(uu));
+    }
+
+    void OnGameStartClick(string uu)
+    {
+        if (PlayerPrefs.HasKey(videoID))
+        {
+            PlayerPrefs.DeleteKey(videoID);
+            Debug.Log("이전 videoID 삭제");
+        }
+        
+        videoID = ExtractYouTubeId(uu);
+        PlayerPrefs.SetString("VideoId", videoID);
+        PlayerPrefs.Save();
+        Debug.Log("videoID 저장됨: " + videoID);
+
+        SceneManager.LoadScene("Game Scene");
     }
 
     public void LoadImageFromDatabase(string imageID)
@@ -264,7 +268,7 @@ public class Get_List : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Error loading image: Could not find a valid image with any of the tried extensions.");
+            Debug.Log("Error loading image: Could not find a valid image with any of the tried extensions.");
         }
     }
 
