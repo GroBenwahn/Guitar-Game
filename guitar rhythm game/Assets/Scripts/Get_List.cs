@@ -220,9 +220,9 @@ public class Get_List : MonoBehaviour
 
     void OnGameStartClick(string uu)
     {
-        if (PlayerPrefs.HasKey(videoID))
+        if (PlayerPrefs.HasKey("VideoId"))
         {
-            PlayerPrefs.DeleteKey(videoID);
+            PlayerPrefs.DeleteKey("VideoId");
             Debug.Log("이전 videoID 삭제");
         }
         
